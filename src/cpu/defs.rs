@@ -73,6 +73,44 @@ impl REG {
         }
     }
 
+    pub fn from_u32(n: u32) -> Option<REG> {
+        match n {
+            0 => Some(REG::x0),
+            1 => Some(REG::x1),
+            2 => Some(REG::x2),
+            3 => Some(REG::x3),
+            4 => Some(REG::x4),
+            5 => Some(REG::x5),
+            6 => Some(REG::x6),
+            7 => Some(REG::x7),
+            8 => Some(REG::x8),
+            9 => Some(REG::x9),
+            10 => Some(REG::x10),
+            11 => Some(REG::x11),
+            12 => Some(REG::x12),
+            13 => Some(REG::x13),
+            14 => Some(REG::x14),
+            15 => Some(REG::x15),
+            16 => Some(REG::x16),
+            17 => Some(REG::x17),
+            18 => Some(REG::x18),
+            19 => Some(REG::x19),
+            20 => Some(REG::x20),
+            21 => Some(REG::x21),
+            22 => Some(REG::x22),
+            23 => Some(REG::x23),
+            24 => Some(REG::x24),
+            25 => Some(REG::x25),
+            26 => Some(REG::x26),
+            27 => Some(REG::x27),
+            28 => Some(REG::x28),
+            29 => Some(REG::x29),
+            30 => Some(REG::x30),
+            31 => Some(REG::x31),
+            _ => None
+        }
+    }
+
     pub fn from_u64(n: u64) -> Option<REG> {
         match n {
             0 => Some(REG::x0),
@@ -238,12 +276,24 @@ pub enum FORMAT {
     J
 }
 
+/// Instruction opcodes for the RISC-V ISA
+#[derive(Debug, PartialEq, Eq)]
+#[allow(non_camel_case_types)]
+pub enum OPCODE {
+    OP,
+    OP_IMM,
+    LOAD,
+    STORE,
+    LUI,
+    AUIPC,
+}
+
 /// Instruction mnemonics for the RISC-V ISA (RV64I + ???)
 #[derive(Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum MNEMONIC {
-    // RV32I and RV64I both have the following
-    // TODO
+    // RV32I
+    LUI,
 
     // RV64I has the following additional instructions
     // TODO
@@ -254,8 +304,8 @@ pub enum MNEMONIC {
 pub struct Instr {
     pub format: FORMAT,
     pub mnemonic: MNEMONIC,
-    pub rd: REG,
-    pub rs1: REG,
-    pub rs2: REG,
-    pub imm: u64
+    pub rd: Option<REG>,
+    pub rs1: Option<REG>,
+    pub rs2: Option<REG>,
+    pub imm: Option<u64>
 }
