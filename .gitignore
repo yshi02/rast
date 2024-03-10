@@ -15,3 +15,6 @@ Cargo.lock
 
 # Ignore some files that are helpful but should not be tracked by git
 ignore/
+
+# Ignore .DS_Store files (.DS_Store is really not a good design decision btw)
+.DS_Store
