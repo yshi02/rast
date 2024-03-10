@@ -33,7 +33,7 @@ pub enum REG {
     x28,
     x29,
     x30,
-    x31
+    x31,
 }
 impl REG {
     pub fn to_usize(&self) -> usize {
@@ -69,7 +69,7 @@ impl REG {
             REG::x28 => 28,
             REG::x29 => 29,
             REG::x30 => 30,
-            REG::x31 => 31
+            REG::x31 => 31,
         }
     }
 
@@ -107,7 +107,7 @@ impl REG {
             29 => Some(REG::x29),
             30 => Some(REG::x30),
             31 => Some(REG::x31),
-            _ => None
+            _ => None,
         }
     }
 
@@ -145,7 +145,7 @@ impl REG {
             29 => Some(REG::x29),
             30 => Some(REG::x30),
             31 => Some(REG::x31),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -185,7 +185,7 @@ pub enum ABI {
     t3,
     t4,
     t5,
-    t6
+    t6,
 }
 impl ABI {
     pub fn to_usize(&self) -> usize {
@@ -221,7 +221,7 @@ impl ABI {
             ABI::t3 => 28,
             ABI::t4 => 29,
             ABI::t5 => 30,
-            ABI::t6 => 31
+            ABI::t6 => 31,
         }
     }
 
@@ -259,7 +259,7 @@ impl ABI {
             29 => Some(ABI::t4),
             30 => Some(ABI::t5),
             31 => Some(ABI::t6),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -273,7 +273,7 @@ pub enum FORMAT {
     S,
     B,
     U,
-    J
+    J,
 }
 
 /// Instruction opcodes for the RISC-V ISA
@@ -282,12 +282,16 @@ pub enum FORMAT {
 pub enum OPCODE {
     LUI,
     AUIPC,
+    JAL,
+    JALR,
 }
 impl OPCODE {
     pub fn to_u32(&self) -> u32 {
         match self {
             OPCODE::LUI => 0b011_0111,
-            OPCODE::AUIPC => 0b001_0111
+            OPCODE::AUIPC => 0b001_0111,
+            OPCODE::JAL => 0b110_1111,
+            OPCODE::JALR => 0b110_0111,
         }
     }
 
@@ -295,7 +299,9 @@ impl OPCODE {
         match n {
             0b011_0111 => Some(OPCODE::LUI),
             0b001_0111 => Some(OPCODE::AUIPC),
-            _ => None
+            0b110_1111 => Some(OPCODE::JAL),
+            0b110_0111 => Some(OPCODE::JALR),
+            _ => None,
         }
     }
 }
@@ -306,8 +312,9 @@ impl OPCODE {
 pub enum MNEMONIC {
     // RV32I
     LUI,
-    AUIPC
-
+    AUIPC,
+    JAL,
+    JALR,
     // RV64I has the following additional instructions
     // TODO
 }
@@ -318,8 +325,10 @@ pub struct Instr {
     pub format: FORMAT,
     pub mnemonic: MNEMONIC,
     pub opcode: OPCODE,
+    pub funct3: Option<u32>,
+    pub funct7: Option<u32>,
     pub rd: Option<REG>,
     pub rs1: Option<REG>,
     pub rs2: Option<REG>,
-    pub imm: Option<u64>
+    pub imm: Option<u64>,
 }
