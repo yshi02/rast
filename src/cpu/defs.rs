@@ -280,12 +280,24 @@ pub enum FORMAT {
 #[derive(Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum OPCODE {
-    OP,
-    OP_IMM,
-    LOAD,
-    STORE,
     LUI,
     AUIPC,
+}
+impl OPCODE {
+    pub fn to_u32(&self) -> u32 {
+        match self {
+            OPCODE::LUI => 0b011_0111,
+            OPCODE::AUIPC => 0b001_0111
+        }
+    }
+
+    pub fn from_u32(n: u32) -> Option<OPCODE> {
+        match n {
+            0b011_0111 => Some(OPCODE::LUI),
+            0b001_0111 => Some(OPCODE::AUIPC),
+            _ => None
+        }
+    }
 }
 
 /// Instruction mnemonics for the RISC-V ISA (RV64I + ???)
@@ -294,6 +306,7 @@ pub enum OPCODE {
 pub enum MNEMONIC {
     // RV32I
     LUI,
+    AUIPC
 
     // RV64I has the following additional instructions
     // TODO
@@ -304,6 +317,7 @@ pub enum MNEMONIC {
 pub struct Instr {
     pub format: FORMAT,
     pub mnemonic: MNEMONIC,
+    pub opcode: OPCODE,
     pub rd: Option<REG>,
     pub rs1: Option<REG>,
     pub rs2: Option<REG>,
