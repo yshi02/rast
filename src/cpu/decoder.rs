@@ -59,17 +59,26 @@ pub fn decode(instr: u32) -> Option<DecodedInstr> {
             let rs1: u32 = (instr >> 15) & 0b1_1111;
             let imm: u32 = instr >> 20;
             let funct3: u32 = (instr >> 12) & 0b111;
-            Some(DecodedInstr {
-                format: FORMAT::I,
-                mnemonic: MNEMONIC::JALR,
-                opcode: OPCODE::JALR,
-                funct3: Some(funct3),
-                funct7: None,
-                rd: REG::from_u32(rd),
-                rs1: REG::from_u32(rs1),
-                rs2: None,
-                imm: Some(imm as u64),
-            })
+
+            if funct3 == 0b000 {
+                Some(DecodedInstr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::JALR,
+                    opcode: OPCODE::JALR,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                })
+            } else {
+                dbg!(format!(
+                    "decode: unknown funct3 {:#03b} for JALR operation",
+                    funct3
+                ));
+                None
+            }
         }
 
         Some(OPCODE::BRANCH) => {
@@ -292,6 +301,96 @@ pub fn decode(instr: u32) -> Option<DecodedInstr> {
             }
         }
 
+        Some(OPCODE::OP_IMM) => {
+            let rd: u32 = (instr >> 7) & 0b1_1111;
+            let funct3: u32 = (instr >> 12) & 0b111;
+            let rs1: u32 = (instr >> 15) & 0b1_1111;
+            let imm: u32 = (instr >> 20) & 0b1111_1111_1111;
+            match funct3 {
+                0b000 => Some(DecodedInstr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::ADDI,
+                    opcode: OPCODE::OP_IMM,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b010 => Some(DecodedInstr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::SLTI,
+                    opcode: OPCODE::OP_IMM,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b011 => Some(DecodedInstr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::SLTIU,
+                    opcode: OPCODE::OP_IMM,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b100 => Some(DecodedInstr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::XORI,
+                    opcode: OPCODE::OP_IMM,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b110 => Some(DecodedInstr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::ORI,
+                    opcode: OPCODE::OP_IMM,
+                    funct3: Some(funct3),
+                    funct7: None,
+
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+
+                    imm: Some(imm as u64),
+                }),
+
+                0b111 => Some(DecodedInstr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::ANDI,
+                    opcode: OPCODE::OP_IMM,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                _ => {
+                    dbg!(format!(
+                        "decode: unknown funct3 {:#03b} for OP_IMM operation",
+                        funct3
+                    ));
+                    None
+                }
+            }
+        }
+
         _ => None,
     }
 }
@@ -385,26 +484,32 @@ mod tests {
     #[test]
     fn test_JALR() {
         let mut rng = rand::thread_rng();
-        for _ in 0..ITERS {
-            // generate random JALR instruction
-            let rd: u32 = rng.gen_range(0..=0b1_1111);
-            let funct3: u32 = 0b000;
-            let rs1: u32 = rng.gen_range(0..=0b1_1111);
-            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111);
-            let instruction: u32 =
-                imm << 20 | rs1 << 15 | 0b000 << 10 | rd << 7 | OPCODE::JALR.to_u32();
+        for funct3 in 0..=0b111 {
+            for _ in 0..ITERS {
+                // generate random JALR instruction
+                let rd: u32 = rng.gen_range(0..=0b1_1111);
+                let rs1: u32 = rng.gen_range(0..=0b1_1111);
+                let imm: u32 = rng.gen_range(0..=0b1111_1111_1111);
+                let instruction: u32 =
+                    imm << 20 | rs1 << 15 | funct3 << 12 | rd << 7 | OPCODE::JALR.to_u32();
 
-            // decode and check
-            let instr = decode(instruction).expect("decode returned None");
-            assert_eq!(instr.format, FORMAT::I);
-            assert_eq!(instr.mnemonic, MNEMONIC::JALR);
-            assert_eq!(instr.opcode, OPCODE::JALR);
-            assert_eq!(instr.funct3, Some(funct3));
-            assert_eq!(instr.funct7, None);
-            assert_eq!(instr.rd, REG::from_u32(rd));
-            assert_eq!(instr.rs1, REG::from_u32(rs1));
-            assert_eq!(instr.rs2, None);
-            assert_eq!(instr.imm, Some(imm as u64));
+                // decode and check
+                let instr = decode(instruction);
+                if funct3 != 0b000 {
+                    assert_eq!(instr, None);
+                } else {
+                    let instr = instr.expect("decode returned None");
+                    assert_eq!(instr.format, FORMAT::I);
+                    assert_eq!(instr.mnemonic, MNEMONIC::JALR);
+                    assert_eq!(instr.opcode, OPCODE::JALR);
+                    assert_eq!(instr.funct3, Some(funct3));
+                    assert_eq!(instr.funct7, None);
+                    assert_eq!(instr.rd, REG::from_u32(rd));
+                    assert_eq!(instr.rs1, REG::from_u32(rs1));
+                    assert_eq!(instr.rs2, None);
+                    assert_eq!(instr.imm, Some(imm as u64));
+                }
+            }
         }
     }
 
@@ -543,6 +648,46 @@ mod tests {
                     assert_eq!(instr.rs1, REG::from_u32(rs1));
                     assert_eq!(instr.rs2, REG::from_u32(rs2));
                     assert_eq!(instr.imm, Some(((imm2 << 5) | imm1) as u64));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_OP_IMMs() {
+        let mut rng = rand::thread_rng();
+        for funct3 in 0..=0b111 {
+            for _ in 0..ITERS {
+                // generate random OP_IMM instruction
+                let rd: u32 = rng.gen_range(0..=0b1_1111);
+                let rs1: u32 = rng.gen_range(0..=0b1_1111);
+                let imm: u32 = rng.gen_range(0..=0b1111_1111_1111);
+                let instruction: u32 =
+                    imm << 20 | rs1 << 15 | funct3 << 12 | rd << 7 | OPCODE::OP_IMM.to_u32();
+
+                // decode and check
+                let instr = decode(instruction);
+                if funct3 == 0b001 || funct3 == 0b101 {
+                    assert_eq!(instr, None);
+                } else {
+                    let instr = instr.unwrap();
+                    assert_eq!(instr.format, FORMAT::I);
+                    match funct3 {
+                        0b000 => assert_eq!(instr.mnemonic, MNEMONIC::ADDI),
+                        0b010 => assert_eq!(instr.mnemonic, MNEMONIC::SLTI),
+                        0b011 => assert_eq!(instr.mnemonic, MNEMONIC::SLTIU),
+                        0b100 => assert_eq!(instr.mnemonic, MNEMONIC::XORI),
+                        0b110 => assert_eq!(instr.mnemonic, MNEMONIC::ORI),
+                        0b111 => assert_eq!(instr.mnemonic, MNEMONIC::ANDI),
+                        _ => panic!("control should not reach here"),
+                    }
+                    assert_eq!(instr.opcode, OPCODE::OP_IMM);
+                    assert_eq!(instr.funct3, Some(funct3));
+                    assert_eq!(instr.funct7, None);
+                    assert_eq!(instr.rd, REG::from_u32(rd));
+                    assert_eq!(instr.rs1, REG::from_u32(rs1));
+                    assert_eq!(instr.rs2, None);
+                    assert_eq!(instr.imm, Some(imm as u64));
                 }
             }
         }
