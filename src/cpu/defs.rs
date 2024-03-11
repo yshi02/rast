@@ -285,6 +285,7 @@ pub enum OPCODE {
     JAL,
     JALR,
     BRANCH,
+    LOAD,
 }
 impl OPCODE {
     pub fn to_u32(&self) -> u32 {
@@ -294,6 +295,7 @@ impl OPCODE {
             OPCODE::JAL => 0b110_1111,
             OPCODE::JALR => 0b110_0111,
             OPCODE::BRANCH => 0b110_0011,
+            OPCODE::LOAD => 0b000_0011,
         }
     }
 
@@ -304,6 +306,7 @@ impl OPCODE {
             0b110_1111 => Some(OPCODE::JAL),
             0b110_0111 => Some(OPCODE::JALR),
             0b110_0011 => Some(OPCODE::BRANCH),
+            0b000_0011 => Some(OPCODE::LOAD),
             _ => None,
         }
     }
@@ -324,6 +327,11 @@ pub enum MNEMONIC {
     BGE,
     BLTU,
     BGEU,
+    LB,
+    LH,
+    LW,
+    LBU,
+    LHU,
 }
 
 /// Decoded instruction structure

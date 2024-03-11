@@ -154,7 +154,80 @@ pub fn decode(instruction: u32) -> Option<Instr> {
                 }),
 
                 _ => {
-                    dbg!("decode: unknown funct3 {:b} for BRANCH instruction", funct3);
+                    dbg!("decode: unknown funct3 {:b} for BRANCH operation", funct3);
+                    None
+                }
+            }
+        }
+
+        Some(OPCODE::LOAD) => {
+            let rd: u32 = (instruction >> 7) & 0b1_1111;
+            let funct3: u32 = (instruction >> 12) & 0b111;
+            let rs1: u32 = (instruction >> 15) & 0b1_1111;
+            let imm: u32 = (instruction >> 20) & 0b1111_1111_1111;
+            match funct3 {
+                0b000 => Some(Instr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::LB,
+                    opcode: OPCODE::LOAD,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b001 => Some(Instr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::LH,
+                    opcode: OPCODE::LOAD,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b010 => Some(Instr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::LW,
+                    opcode: OPCODE::LOAD,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b100 => Some(Instr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::LBU,
+                    opcode: OPCODE::LOAD,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                0b101 => Some(Instr {
+                    format: FORMAT::I,
+                    mnemonic: MNEMONIC::LHU,
+                    opcode: OPCODE::LOAD,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: REG::from_u32(rd),
+                    rs1: REG::from_u32(rs1),
+                    rs2: None,
+                    imm: Some(imm as u64),
+                }),
+
+                _ => {
+                    dbg!("decode: unknown funct3 {:b} for LOAD operation", funct3);
                     None
                 }
             }
@@ -293,7 +366,7 @@ mod tests {
     }
 
     #[test]
-    fn test_Branches() {
+    fn test_BRANCHes() {
         let mut rng = rand::thread_rng();
         for funct3 in 0..=0b111 {
             for _ in 0..ITERS {
@@ -352,4 +425,51 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_LOADs() {
+        let mut rng = rand::thread_rng();
+        for funct3 in 0..=0b111 {
+            for _ in 0..ITERS {
+                // generate random LOAD instruction
+                let rd: u32 = rng.gen_range(0..=0b1_1111);
+                let rs1: u32 = rng.gen_range(0..=0b1_1111);
+                let imm: u32 = rng.gen_range(0..=0b1111_1111_1111);
+                let instruction: u32 =
+                    imm << 20 | rs1 << 15 | funct3 << 12 | rd << 7 | OPCODE::LOAD.to_u32();
+                println!("rd: {:b}", rd);
+                println!("funct3: {:b}", funct3);
+                println!("rs1: {:b}", rs1);
+                println!("imm: {:b}", imm);
+                println!("instruction: {:b}", instruction);
+
+                // decode and check
+                let instr = decode(instruction);
+                println!("{:?}", instr);
+                if funct3 == 0b011 || funct3 == 0b110 || funct3 == 0b111 {
+                    assert_eq!(instr, None);
+                } else {
+                    let instr = instr.unwrap();
+                    assert_eq!(instr.format, FORMAT::I);
+                    match funct3 {
+                        0b000 => assert_eq!(instr.mnemonic, MNEMONIC::LB),
+                        0b001 => assert_eq!(instr.mnemonic, MNEMONIC::LH),
+                        0b010 => assert_eq!(instr.mnemonic, MNEMONIC::LW),
+                        0b100 => assert_eq!(instr.mnemonic, MNEMONIC::LBU),
+                        0b101 => assert_eq!(instr.mnemonic, MNEMONIC::LHU),
+                        _ => panic!("unknown funct3 {:b} for LOAD instruction", funct3),
+                    }
+                    assert_eq!(instr.opcode, OPCODE::LOAD);
+                    assert_eq!(instr.funct3, Some(funct3));
+                    assert_eq!(instr.funct7, None);
+                    assert_eq!(instr.rd, REG::from_u32(rd));
+                    assert_eq!(instr.rs1, REG::from_u32(rs1));
+                    assert_eq!(instr.rs2, None);
+                    assert_eq!(instr.imm, Some(imm as u64));
+                }
+            }
+        }
+    }
+
+    // do no fold me
 }
