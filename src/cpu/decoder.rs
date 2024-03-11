@@ -71,6 +71,95 @@ pub fn decode(instruction: u32) -> Option<Instr> {
                 imm: Some(imm as u64),
             })
         }
+
+        Some(OPCODE::BRANCH) => {
+            let funct3: u32 = (instruction >> 12) & 0b111;
+            let rs1: u32 = (instruction >> 15) & 0b1_1111;
+            let rs2: u32 = (instruction >> 20) & 0b1_1111;
+            let imm: u32 = ((instruction >> 19) & 0b1_0000_0000_0000) // imm[12]
+                | ((instruction >> 20) & 0b111_1110_0000) // imm[10:5]
+                | ((instruction >> 7) & 0b1_1110) // imm[4:1]
+                | ((instruction << 4) & 0b1000_0000_0000); // imm[11]
+            match funct3 {
+                0b000 => Some(Instr {
+                    format: FORMAT::B,
+                    mnemonic: MNEMONIC::BEQ,
+                    opcode: OPCODE::BRANCH,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: None,
+                    rs1: REG::from_u32(rs1),
+                    rs2: REG::from_u32(rs2),
+                    imm: Some(imm as u64),
+                }),
+
+                0b001 => Some(Instr {
+                    format: FORMAT::B,
+                    mnemonic: MNEMONIC::BNE,
+                    opcode: OPCODE::BRANCH,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: None,
+                    rs1: REG::from_u32(rs1),
+                    rs2: REG::from_u32(rs2),
+                    imm: Some(imm as u64),
+                }),
+
+                0b100 => Some(Instr {
+                    format: FORMAT::B,
+                    mnemonic: MNEMONIC::BLT,
+                    opcode: OPCODE::BRANCH,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: None,
+                    rs1: REG::from_u32(rs1),
+                    rs2: REG::from_u32(rs2),
+                    imm: Some(imm as u64),
+                }),
+
+                0b101 => Some(Instr {
+                    format: FORMAT::B,
+                    mnemonic: MNEMONIC::BGE,
+                    opcode: OPCODE::BRANCH,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: None,
+                    rs1: REG::from_u32(rs1),
+                    rs2: REG::from_u32(rs2),
+                    imm: Some(imm as u64),
+                }),
+
+                0b110 => Some(Instr {
+                    format: FORMAT::B,
+                    mnemonic: MNEMONIC::BLTU,
+                    opcode: OPCODE::BRANCH,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: None,
+                    rs1: REG::from_u32(rs1),
+                    rs2: REG::from_u32(rs2),
+                    imm: Some(imm as u64),
+                }),
+
+                0b111 => Some(Instr {
+                    format: FORMAT::B,
+                    mnemonic: MNEMONIC::BGEU,
+                    opcode: OPCODE::BRANCH,
+                    funct3: Some(funct3),
+                    funct7: None,
+                    rd: None,
+                    rs1: REG::from_u32(rs1),
+                    rs2: REG::from_u32(rs2),
+                    imm: Some(imm as u64),
+                }),
+
+                _ => {
+                    dbg!("decode: unknown funct3 {:b} for BRANCH instruction", funct3);
+                    None
+                }
+            }
+        }
+
         _ => None,
     }
 }
@@ -200,6 +289,67 @@ mod tests {
             assert_eq!(instr.rs1, REG::from_u32(rs1));
             assert_eq!(instr.rs2, None);
             assert_eq!(instr.imm, Some(imm as u64));
+        }
+    }
+
+    #[test]
+    fn test_Branches() {
+        let mut rng = rand::thread_rng();
+        for funct3 in 0..=0b111 {
+            for _ in 0..ITERS {
+                // generate random BRANCH instruction
+                let imm1: u32 = rng.gen_range(0..=0b111_1111);
+                let imm2: u32 = rng.gen_range(0..=0b1_1111);
+                let rs1: u32 = rng.gen_range(0..=0b1_1111);
+                let rs2: u32 = rng.gen_range(0..=0b1_1111);
+                let instruction: u32 = imm1 << 25
+                    | rs2 << 20
+                    | rs1 << 15
+                    | funct3 << 12
+                    | imm2 << 7
+                    | OPCODE::BRANCH.to_u32();
+                println!("instruction: {:b}", instruction);
+                println!("imm1: {:b}", imm1);
+                println!("imm2: {:b}", imm2);
+                println!("rs1: {:b}", rs1);
+                println!("rs2: {:b}", rs2);
+                println!("funct3: {:b}", funct3);
+
+                // decode and check
+                let instr = decode(instruction);
+                println!("{:?}", instr);
+                if funct3 == 0b010 || funct3 == 0b011 {
+                    assert_eq!(instr, None);
+                } else {
+                    let instr = instr.unwrap();
+                    assert_eq!(instr.format, FORMAT::B);
+                    match funct3 {
+                        0b000 => assert_eq!(instr.mnemonic, MNEMONIC::BEQ),
+                        0b001 => assert_eq!(instr.mnemonic, MNEMONIC::BNE),
+                        0b100 => assert_eq!(instr.mnemonic, MNEMONIC::BLT),
+                        0b101 => assert_eq!(instr.mnemonic, MNEMONIC::BGE),
+                        0b110 => assert_eq!(instr.mnemonic, MNEMONIC::BLTU),
+                        0b111 => assert_eq!(instr.mnemonic, MNEMONIC::BGEU),
+                        _ => panic!("unknown funct3 {:b} for BRANCH instruction", funct3),
+                    }
+                    assert_eq!(instr.opcode, OPCODE::BRANCH);
+                    assert_eq!(instr.funct3, Some(funct3));
+                    assert_eq!(instr.funct7, None);
+                    assert_eq!(instr.rd, None);
+                    assert_eq!(instr.rs1, REG::from_u32(rs1));
+                    assert_eq!(instr.rs2, REG::from_u32(rs2));
+                    assert_eq!(
+                        instr.imm,
+                        Some(
+                            (((imm1 << 6) & 0b1_0000_0000_0000) // imm[12]
+                                | ((imm1 << 5) & 0b111_1110_0000) // imm[10:5]
+                                | (imm2 & 0b1_1110) // imm[4:1]
+                                | (imm2 << 11) & 0b1000_0000_0000) // imm[11]
+                                as u64
+                        )
+                    );
+                }
+            }
         }
     }
 }

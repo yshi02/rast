@@ -284,6 +284,7 @@ pub enum OPCODE {
     AUIPC,
     JAL,
     JALR,
+    BRANCH,
 }
 impl OPCODE {
     pub fn to_u32(&self) -> u32 {
@@ -292,6 +293,7 @@ impl OPCODE {
             OPCODE::AUIPC => 0b001_0111,
             OPCODE::JAL => 0b110_1111,
             OPCODE::JALR => 0b110_0111,
+            OPCODE::BRANCH => 0b110_0011,
         }
     }
 
@@ -301,6 +303,7 @@ impl OPCODE {
             0b001_0111 => Some(OPCODE::AUIPC),
             0b110_1111 => Some(OPCODE::JAL),
             0b110_0111 => Some(OPCODE::JALR),
+            0b110_0011 => Some(OPCODE::BRANCH),
             _ => None,
         }
     }
@@ -315,8 +318,12 @@ pub enum MNEMONIC {
     AUIPC,
     JAL,
     JALR,
-    // RV64I has the following additional instructions
-    // TODO
+    BEQ,
+    BNE,
+    BLT,
+    BGE,
+    BLTU,
+    BGEU,
 }
 
 /// Decoded instruction structure
