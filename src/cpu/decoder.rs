@@ -391,6 +391,313 @@ pub fn decode(instr: u32) -> Option<DecodedInstr> {
             }
         }
 
+        Some(OPCODE::OP) => {
+            let rd: u32 = (instr >> 7) & 0b1_1111;
+            let funct3: u32 = (instr >> 12) & 0b111;
+            let rs1: u32 = (instr >> 15) & 0b1_1111;
+            let rs2: u32 = (instr >> 20) & 0b1_1111;
+            let funct7: u32 = (instr >> 25) & 0b111_1111;
+            match funct3 {
+                0b000 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::ADD,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::MUL,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b010_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::SUB,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                0b001 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::SLL,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::MULH,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                0b010 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::SLT,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::MULHSU,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                0b011 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::SLTU,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::MULHU,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                0b100 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::XOR,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::DIV,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                0b101 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::SRL,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::DIVU,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b010_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::SRA,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                0b110 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::OR,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::REM,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                0b111 => match funct7 {
+                    0b000_0000 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::AND,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    0b000_0001 => Some(DecodedInstr {
+                        format: FORMAT::R,
+                        mnemonic: MNEMONIC::REMU,
+                        opcode: OPCODE::OP,
+                        funct3: Some(funct3),
+                        funct7: Some(funct7),
+                        rd: REG::from_u32(rd),
+                        rs1: REG::from_u32(rs1),
+                        rs2: REG::from_u32(rs2),
+                        imm: None,
+                    }),
+
+                    _ => {
+                        dbg!(format!(
+                            "decode: unknown funct7 {:#07b} for OP operation with funct3 {:#03b}",
+                            funct7, funct3
+                        ));
+                        None
+                    }
+                },
+
+                _ => panic!("control should not reach here"),
+            }
+        }
+
         _ => None,
     }
 }

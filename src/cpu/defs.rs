@@ -288,6 +288,7 @@ pub enum OPCODE {
     LOAD,
     STORE,
     OP_IMM,
+    OP,
 }
 impl OPCODE {
     pub fn to_u32(&self) -> u32 {
@@ -300,6 +301,7 @@ impl OPCODE {
             OPCODE::LOAD => 0b000_0011,
             OPCODE::STORE => 0b010_0011,
             OPCODE::OP_IMM => 0b001_0011,
+            OPCODE::OP => 0b011_0011,
         }
     }
 
@@ -313,6 +315,7 @@ impl OPCODE {
             0b000_0011 => Some(OPCODE::LOAD),
             0b010_0011 => Some(OPCODE::STORE),
             0b001_0011 => Some(OPCODE::OP_IMM),
+            0b011_0011 => Some(OPCODE::OP),
             _ => None,
         }
     }
@@ -347,6 +350,26 @@ pub enum MNEMONIC {
     XORI,
     ORI,
     ANDI,
+    ADD,
+    SUB,
+    SLL,
+    SLT,
+    SLTU,
+    XOR,
+    SRL,
+    SRA,
+    OR,
+    AND,
+
+    // RV32M
+    MUL,
+    MULH,
+    MULHSU,
+    MULHU,
+    DIV,
+    DIVU,
+    REM,
+    REMU,
 }
 
 /// Decoded instruction structure
