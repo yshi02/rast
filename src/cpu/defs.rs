@@ -286,6 +286,7 @@ pub enum OPCODE {
     JALR,
     BRANCH,
     LOAD,
+    STORE,
 }
 impl OPCODE {
     pub fn to_u32(&self) -> u32 {
@@ -296,6 +297,7 @@ impl OPCODE {
             OPCODE::JALR => 0b110_0111,
             OPCODE::BRANCH => 0b110_0011,
             OPCODE::LOAD => 0b000_0011,
+            OPCODE::STORE => 0b010_0011,
         }
     }
 
@@ -307,6 +309,7 @@ impl OPCODE {
             0b110_0111 => Some(OPCODE::JALR),
             0b110_0011 => Some(OPCODE::BRANCH),
             0b000_0011 => Some(OPCODE::LOAD),
+            0b010_0011 => Some(OPCODE::STORE),
             _ => None,
         }
     }
@@ -332,11 +335,14 @@ pub enum MNEMONIC {
     LW,
     LBU,
     LHU,
+    SB,
+    SH,
+    SW,
 }
 
 /// Decoded instruction structure
 #[derive(Debug, PartialEq, Eq)]
-pub struct Instr {
+pub struct DecodedInstr {
     pub format: FORMAT,
     pub mnemonic: MNEMONIC,
     pub opcode: OPCODE,
