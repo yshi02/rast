@@ -251,12 +251,12 @@ mod tests {
         let mut rng = rand::thread_rng();
         for _ in 0..ITERS {
             // generate random LUI instruction
-            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111_1111_1111);
             let rd: u32 = rng.gen_range(0..=0b1_1111);
+            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111_1111_1111);
             let instruction: u32 = imm << 12 | rd << 7 | OPCODE::LUI.to_u32();
-            println!("instruction: {:b}", instruction);
-            println!("imm: {:b}", imm);
             println!("rd: {:b}", rd);
+            println!("imm: {:b}", imm);
+            println!("instruction: {:b}", instruction);
 
             // decode and check
             let instr = decode(instruction).expect("decode returned None");
@@ -278,12 +278,12 @@ mod tests {
         let mut rng = rand::thread_rng();
         for _ in 0..ITERS {
             // generate random AUIPC instruction
-            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111_1111_1111);
             let rd: u32 = rng.gen_range(0..=0b1_1111);
+            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111_1111_1111);\
             let instruction: u32 = imm << 12 | rd << 7 | OPCODE::AUIPC.to_u32();
-            println!("instruction: {:b}", instruction);
-            println!("imm: {:b}", imm);
             println!("rd: {:b}", rd);
+            println!("imm: {:b}", imm);
+            println!("instruction: {:b}", instruction);
 
             // decode and check
             let instr = decode(instruction).expect("decode returned None");
@@ -305,12 +305,12 @@ mod tests {
         let mut rng = rand::thread_rng();
         for _ in 0..ITERS {
             // generate random JAL instruction
-            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111_1111_1111);
             let rd: u32 = rng.gen_range(0..=0b1_1111);
+            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111_1111_1111);
             let instruction: u32 = imm << 12 | rd << 7 | OPCODE::JAL.to_u32();
-            println!("instruction: {:b}", instruction);
-            println!("imm: {:b}", imm);
             println!("rd: {:b}", rd);
+            println!("imm: {:b}", imm);
+            println!("instruction: {:b}", instruction);
 
             // decode and check
             let instr = decode(instruction).expect("decode returned None");
@@ -340,15 +340,17 @@ mod tests {
         let mut rng = rand::thread_rng();
         for _ in 0..ITERS {
             // generate random JALR instruction
-            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111);
             let rd: u32 = rng.gen_range(0..=0b1_1111);
+            let funct3: u32 = 0b000;
             let rs1: u32 = rng.gen_range(0..=0b1_1111);
+            let imm: u32 = rng.gen_range(0..=0b1111_1111_1111);
             let instruction: u32 =
                 imm << 20 | rs1 << 15 | 0b000 << 10 | rd << 7 | OPCODE::JALR.to_u32();
-            println!("instruction: {:b}", instruction);
-            println!("imm: {:b}", imm);
             println!("rd: {:b}", rd);
+            println!("funct3: {:b}", funct3);
             println!("rs1: {:b}", rs1);
+            println!("imm: {:b}", imm);
+            println!("instruction: {:b}", instruction);
 
             // decode and check
             let instr = decode(instruction).expect("decode returned None");
@@ -356,7 +358,7 @@ mod tests {
             assert_eq!(instr.format, FORMAT::I);
             assert_eq!(instr.mnemonic, MNEMONIC::JALR);
             assert_eq!(instr.opcode, OPCODE::JALR);
-            assert_eq!(instr.funct3, Some(0b000));
+            assert_eq!(instr.funct3, Some(funct3));
             assert_eq!(instr.funct7, None);
             assert_eq!(instr.rd, REG::from_u32(rd));
             assert_eq!(instr.rs1, REG::from_u32(rs1));
@@ -372,21 +374,21 @@ mod tests {
             for _ in 0..ITERS {
                 // generate random BRANCH instruction
                 let imm1: u32 = rng.gen_range(0..=0b111_1111);
-                let imm2: u32 = rng.gen_range(0..=0b1_1111);
                 let rs1: u32 = rng.gen_range(0..=0b1_1111);
                 let rs2: u32 = rng.gen_range(0..=0b1_1111);
+                let imm2: u32 = rng.gen_range(0..=0b1_1111);
                 let instruction: u32 = imm1 << 25
                     | rs2 << 20
                     | rs1 << 15
                     | funct3 << 12
                     | imm2 << 7
                     | OPCODE::BRANCH.to_u32();
-                println!("instruction: {:b}", instruction);
                 println!("imm1: {:b}", imm1);
-                println!("imm2: {:b}", imm2);
+                println!("funct3: {:b}", funct3);
                 println!("rs1: {:b}", rs1);
                 println!("rs2: {:b}", rs2);
-                println!("funct3: {:b}", funct3);
+                println!("imm2: {:b}", imm2);
+                println!("instruction: {:b}", instruction);
 
                 // decode and check
                 let instr = decode(instruction);
