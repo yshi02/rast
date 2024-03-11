@@ -1,0 +1,4 @@
+#!bin/bash
+
+alias rvgcc="riscv64-unknown-elf-gcc -Ttext=0x0 -nostdlib"
+alias rvobjdump="riscv64-unknown-elf-objdump -M no-aliases"
